@@ -1,0 +1,195 @@
+
+; 256
+
+; Test progrmm:
+
+       ;ld       de,STR_ver
+       ;call     BIOS_printstr
+
+;loop:
+       ;ld       de,STR_newline
+       ;call     BIOS_printstr
+
+       ;ld       de,STR_prompt
+       ;call     BIOS_printstr
+
+       ;call     BIOS_getcommand
+       
+       ;jr        loop
+       
+       ld         a,2
+       ld         (2560),a
+       
+       ld         a,41
+       ld         (2048),a
+
+       ld         a,42
+       ld         (2064),a
+       
+       call BIOS_filesystem_list
+
+       halt
+       
+; Izlistava fajlove
+       
+BIOS_filesystem_list:
+                     ld         hl,2048
+                     ld         a,(2560)
+                     ld         b,a
+                     
+listloop:
+                     ld         d,h
+                     ld         e,l
+                     call       BIOS_printstr
+                     inc        hl
+                     inc        hl
+                     inc        hl
+                     inc        hl
+                     inc        hl
+                     inc        hl
+                     inc        hl
+                     inc        hl
+                     inc        hl
+                     inc        hl
+                     inc        hl
+                     inc        hl
+                     inc        hl
+                     inc        hl
+                     inc        hl
+                     inc        hl
+                     djnz       listloop
+                     
+                     ret
+        
+; Rutina za ocitavanje jednog karaktera. Ceka se da
+; otkucani znak bude na raspolaganju pa se vraca
+; u registru A.
+
+BIOS_getchar:
+
+_waitgc:
+        in   a,(12h)
+        bit  1,a
+        jr   z,_waitgc
+        
+        in   a,(13h)
+        ret
+        
+; Rutina za ispisivanje jednog karaktera na terminalu.
+; Karakter se srosledjuje kroz registar. Rutina ceka
+; terminal da bude spreman za upis.
+        
+BIOS_putchar:
+        push af
+
+_waitpc:
+        in   a,(12h)
+        bit  2,a
+        jr   z,_waitpc
+
+        pop  af
+        out  (13h),a
+        ret
+        
+; Rutina za ocitavanja niza karaktera sa tastature
+; i smestanje u memoriju. Po pritisku ENTER na kraju
+; se upisuje NULL i prekida se citanje
+
+BIOS_getcommand:
+                push        af
+                push        bc
+                push        hl
+                
+                ld          hl,LINE_BUFFER
+                ld          b,64
+                
+_cmdloop:
+                call        BIOS_getchar
+                
+                ; Proveri da li je pritisnut enter,
+                ; pa ako jese, zavrsi sa unosom linije.
+                
+                cp          13
+                jr          z,_exitgc
+                
+                ; Pravilno izvrsavanje backspace
+                
+                cp         8
+                jr         nz,_gcback
+                
+                ld         a,b
+                cp         64
+                jr         z,_cmdloop
+                
+                ld         a,8
+                call       BIOS_putchar
+                ld         a,32
+                call       BIOS_putchar
+                ld         a,8
+                call       BIOS_putchar
+                inc        b
+                dec        hl
+                jr         _cmdloop
+                
+_gcback:
+
+                ; Provera da li je unet maksimalni broj
+                ; karaktera, pa ako jeste vrati se na
+                ; ocitavanje bez promene brojaca.
+                
+                ex          af,af'
+                ld          a,b
+                cp          0
+                jr          z,_cmdloop
+
+                ; Ako nije ENTER, upisi karakter u memoriju
+                
+                ex          af,af'
+                ld          (hl),a
+                call        BIOS_putchar
+                inc         hl
+                dec         b
+                jr          _cmdloop
+                
+_exitgc:
+                ld          (hl),0
+                pop         hl
+                pop         bc
+                pop         af
+                ret
+        
+; Rutina za ispis NULL terminisanog stringa.
+; Registar DE se koristi kao pocetna adresa
+; stringa koji treba ispisati. Po zavrsetku
+; de pokazuje na NULL karakter, a ostali
+; registri su nepromenjeni
+
+BIOS_printstr:
+         push af
+         
+_seeknull:
+         ld         a,(de)
+         cp         0
+         jr         z,_exitps
+         
+         call       BIOS_putchar
+         
+         inc         de
+         jr          _seeknull
+         
+_exitps:
+         pop         af
+         ret
+         
+STR_prompt:
+         db "READY>> ",0
+         
+STR_newline:
+         db 13,10,0
+         
+STR_ver:
+         db "Petnica BIOS v1.0", 13, 10
+         db "Z80 Emu port, FEB/2014", 13, 10, 13, 10, 0
+         
+LINE_BUFFER:
+            db 128
