@@ -8,6 +8,31 @@
        ;ld       de,STR_ver
        ;call     BIOS_printstr
 
+	ld 	hl,STR1
+	ld	bc,STR2
+	call	BIOS_strcmp
+	ld	a,d
+	cp 	1 
+	jr	z,_prepoznato 
+	call 	_ne_prepoznato
+
+_prepoznato:
+	
+       ld       de,STR_newline
+       call     BIOS_printstr
+
+       ld       de,STR_succParse
+       call     BIOS_printstr
+       halt
+
+_ne_prepoznato:
+       ld       de,STR_newline
+       call     BIOS_printstr
+
+       ld       de,STR_errorParse
+       call     BIOS_printstr
+	halt
+
 loop:
        ld       de,STR_newline
        call     BIOS_printstr
@@ -45,7 +70,7 @@ BIOS_charcmp:
 	ret
 
 ; Compare two strings and put it into D 
-BIOS:strcmp:
+BIOS_strcmp:
 	ld	d,1
 _strcmp_loop:
 	ld 	a,(HL)
@@ -215,6 +240,12 @@ STR_errorParse:
 STR_ver:
          db "Petnica BIOS v1.0", 13, 10
          db "Z80 Emu port, FEB/2014", 13, 10, 13, 10, 0
-         
+
+STR1:
+	db "aaa",0
+
+STR2:
+	db "aaa",0
+
 LINE_BUFFER:
             db 128
