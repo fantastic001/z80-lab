@@ -3,6 +3,18 @@
 
 ; 256
 
+test_loop:
+	call	BIOS_scanchar 
+	call 	nz,put_one
+	jr	test_loop
+
+; test random 
+
+put_one:
+	ld	a,64
+	call	BIOS_putchar
+	ret
+
 ; Test progrmm:
 
        ;ld       de,STR_ver
@@ -62,6 +74,10 @@ loop:
 ; otkucani znak bude na raspolaganju pa se vraca
 ; u registru A.
 
+; scans for character (key press)
+BIOS_scanchar:
+	in	a,(13h)
+	ret
 
 ; input (HL), (BC), output Z, compare two characters 
 BIOS_charcmp:
@@ -187,7 +203,6 @@ _gcback:
                 
 _exitgc:
                 ld          (hl),0
-		call 	    BASIC_parse_line
                 pop         hl
                 pop         bc
                 pop         af
