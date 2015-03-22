@@ -37,6 +37,42 @@ loop:
 ; otkucani znak bude na raspolaganju pa se vraca
 ; u registru A.
 
+
+; input (HL), (BC), output Z, compare two characters 
+BIOS_charcmp:
+	ld	a,(BC) 
+	cp	(HL)
+	ret
+
+; Compare two strings and put it into D 
+BIOS:strcmp:
+	ld	d,1
+_strcmp_loop:
+	ld 	a,(HL)
+	cp 	0
+	jr	z,_strcmp_check_another
+	ld	a,(bc) 
+	cp	0
+	jr	z,_strcmp_check_another_1
+	call	BIOS_charcmp 
+	jr 	nz,_strcmp_exit
+	inc 	hl
+	inc	bc
+	jr	_strcmp_loop
+_strcmp_exit:
+	ld	d,0
+	ret
+_strcmp_check_another:
+	ld 	a,(bc)
+	cp 	0
+	jr	nz,_strcmp_exit
+	ret
+_strcmp_check_another_1:
+	ld 	a,(hl)
+	cp	0
+	jr	nz,_strcmp_exit
+	ret
+
 BIOS_getchar:
 
 _waitgc:
