@@ -461,17 +461,13 @@ _ComAdcnumDone:
 ; Izlaz se smesta u A registar
 ; ----------------------------------------
 BIOS_mul:
-         xor a
-         ld b, 8
-Mul8Loop:
-         rrca
-         jr nc,Mul8Skip
-         add a,(hl)
-Mul8Skip:
-         sla l
-         rl h
-         djnz Mul8Loop
-         ret
+	ld	a,(bc)
+	ld	b,(hl)
+	ld	d,a
+_mul_loop:
+	add 	a,d
+	djnz	_mul_loop
+	sub	d
 
 
 
@@ -493,7 +489,7 @@ STR_errParse:
              db "Greska prilikom parsiranja", 13, 10, 0
 
 OPERAND1:
-	db 2
+	db 5
 
 OPERAND2:
 	db 2
