@@ -1,4 +1,6 @@
 
+;org 256 
+
 ; 256
 
 ; Test progrmm:
@@ -6,27 +8,27 @@
        ;ld       de,STR_ver
        ;call     BIOS_printstr
 
-;loop:
-       ;ld       de,STR_newline
-       ;call     BIOS_printstr
+loop:
+       ld       de,STR_newline
+       call     BIOS_printstr
 
-       ;ld       de,STR_prompt
-       ;call     BIOS_printstr
+       ld       de,STR_prompt
+       call     BIOS_printstr
 
-       ;call     BIOS_getcommand
+       call     BIOS_getcommand
        
-       ;jr        loop
+       jr        loop
        
-       ld         a,2
-       ld         (2560),a
+       ;ld         a,2
+       ;ld         (2560),a
        
-       ld         a,41
-       ld         (2048),a
+       ;ld         a,41
+       ;ld         (2048),a
 
-       ld         a,42
-       ld         (2064),a
+       ;ld         a,42
+       ;ld         (2064),a
        
-       call BIOS_filesystem_list
+       ;call BIOS_filesystem_list
 
        halt
        
