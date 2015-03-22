@@ -32,36 +32,6 @@ loop:
 
        halt
        
-; Izlistava fajlove
-       
-BIOS_filesystem_list:
-                     ld         hl,2048
-                     ld         a,(2560)
-                     ld         b,a
-                     
-listloop:
-                     ld         d,h
-                     ld         e,l
-                     call       BIOS_printstr
-                     inc        hl
-                     inc        hl
-                     inc        hl
-                     inc        hl
-                     inc        hl
-                     inc        hl
-                     inc        hl
-                     inc        hl
-                     inc        hl
-                     inc        hl
-                     inc        hl
-                     inc        hl
-                     inc        hl
-                     inc        hl
-                     inc        hl
-                     inc        hl
-                     djnz       listloop
-                     
-                     ret
         
 ; Rutina za ocitavanje jednog karaktera. Ceka se da
 ; otkucani znak bude na raspolaganju pa se vraca
