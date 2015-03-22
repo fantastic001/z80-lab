@@ -2,6 +2,12 @@
 
 org	256
 
+	ld 	HL,OPERAND1
+	ld	bc,OPERAND2
+	call	BIOS_mul
+	ld	(0),a
+	halt
+
          ld     de, STR_mainScreen
          call   BIOS_printstr
 mainLoop:
@@ -485,6 +491,12 @@ STR_succParse:
 STR_errParse:
              db 13, 10
              db "Greska prilikom parsiranja", 13, 10, 0
+
+OPERAND1:
+	db 2
+
+OPERAND2:
+	db 2
 
 STR_keyWords:
              db "inc", 0 ; Uvecaj promenljivu za 1
