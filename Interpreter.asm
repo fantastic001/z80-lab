@@ -2,12 +2,6 @@
 
 org	256
 
-	ld 	HL,OPERAND1
-	ld	bc,OPERAND2
-	call	BIOS_mul
-	ld	(0),a
-	halt
-
          ld     de, STR_mainScreen
          call   BIOS_printstr
 mainLoop:
@@ -468,6 +462,7 @@ _mul_loop:
 	add 	a,d
 	djnz	_mul_loop
 	sub	d
+	ret
 
 
 
@@ -489,7 +484,7 @@ STR_errParse:
              db "Greska prilikom parsiranja", 13, 10, 0
 
 OPERAND1:
-	db 5
+	db 10
 
 OPERAND2:
 	db 2
