@@ -1,7 +1,5 @@
 ; Interpreter
 
-org	256
-
          ld     de, STR_mainScreen
          call   BIOS_printstr
 mainLoop:
@@ -225,7 +223,52 @@ _parseLineSucc5:
                call    BASIC_ComAdc
                ret
 _parseNext5:
-; provera seste reci.....
+; provera seste reci
+               ld      bc, 20
+               ld      hl, STR_keyWords
+               add     hl, bc
+               ld      bc, LINE_BUFFER
+               call    BIOS_compStr ; reg a=0 za prepoznatu
+               jr      Z, _parseLineSucc6
+               jr      _parseNext6
+
+_parseLineSucc6:
+               ld      de, STR_succParse
+               call    BIOS_printstr
+               call    BASIC_ComAdv
+               ret
+_parseNext6:
+; provera seste reci
+               ld      bc, 24
+               ld      hl, STR_keyWords
+               add     hl, bc
+               ld      bc, LINE_BUFFER
+               call    BIOS_compStr ; reg a=0 za prepoznatu
+               jr      Z, _parseLineSucc7
+               jr      _parseNext7
+
+_parseLineSucc7:
+               ld      de, STR_succParse
+               call    BIOS_printstr
+               call    BASIC_ComMuc
+               ret
+_parseNext7:
+; provera sedme reci
+               ld      bc, 28
+               ld      hl, STR_keyWords
+               add     hl, bc
+               ld      bc, LINE_BUFFER
+               call    BIOS_compStr ; reg a=0 za prepoznatu
+               jr      Z, _parseLineSucc8
+               jr      _parseNext8
+
+_parseLineSucc8:
+               ld      de, STR_succParse
+               call    BIOS_printstr
+               call    BASIC_ComMuv
+               ret
+_parseNext8:
+; provera sedme reci.....
 
 
 ; Neuspesno parsiranje
@@ -378,32 +421,11 @@ _ComInpnumDone:
              ld     bc,(LINE_BUFFER)
              ld     (hl), c
              
-             ret;kraj funkcje za unos promenljivve
-             
-             ld     a, (LINE_BUFFER)
-             add    a, (hl)
-             ld     (LINE_BUFFER), a
-             
-             ; hl je pokazivac na target promenljivu
-             ld     hl, LINE_BUFFER
-             ld     bc, 6
-             Add    hl, bc
-             ld     a, (hl)
-             sub    97
-             ld     hl, $1000
-             ld     b, 0
-             ld     c, a
-
-             add    hl, bc
-             
-             ld     (hl), a
-             
              ret
              
              
 ; BASIC instrukcija za sabiranje promenljive i konstante i smestanje u posebnu promenljivu
 BASIC_ComAdc:
-             ld      (LINE_BUFFER), hl
 
              ; hl je pokazivac na pocetnu promenljivu
              ld     hl, LINE_BUFFER
@@ -416,14 +438,15 @@ BASIC_ComAdc:
              ld     c, a
 
              add    hl, bc
+             push    hl
              
 
              ld     hl, LINE_BUFFER
-             ld     bc, 6
+             ld     bc, 8
              Add    hl, bc
              ld     (0), hl
              ld     de, (0)
-             ; StrToInt - hl je trazeni broj de je moseto stringa
+             ; StrToInt - hl je trazeni broj; de je moseto stringa
              ld hl,0
 _ComAdcConvLoop:
              ld      a,(de)
@@ -446,8 +469,203 @@ _ComAdcConvLoop:
              jr      _ComAdcConvLoop
 
 _ComAdcnumDone:
+               ex    de, hl
+               pop   hl
+               ld    b, 0
+               ld    c, (HL)
+               ld    h,b
+               ld    l,c
+               add   hl, de
+
+               push  hl
+               ; hl je pokazivac na ciljanu promenljivu
+             ld     hl, LINE_BUFFER
+             ld     bc, 4
+             Add    hl, bc
+             ld     a, (hl)
+             sub    97
+             ld     hl, $1000
+             ld     b, 0
+             ld     c, a
+
+             add    hl, bc
+
+             pop    bc
+             ld     (hl), c
              
              ret
+             
+             
+
+; BASIC instrukcija za sabiranje dve promenljive
+BASIC_ComAdv:
+
+             ; hl je pokazivac na pocetnu promenljivu
+             ld     hl, LINE_BUFFER
+             ld     bc, 6
+             Add    hl, bc
+             ld     a, (hl)
+             sub    97
+             ld     hl, $1000
+             ld     b, 0
+             ld     c, a
+
+             add    hl, bc
+             ld     a,(hl)
+             push   af
+
+             ; hl je pokazivac na drugu promenljivu
+             ld     hl, LINE_BUFFER
+             ld     bc, 8
+             Add    hl, bc
+             ld     a, (hl)
+             sub    97
+             ld     hl, $1000
+             ld     b, 0
+             ld     c, a
+
+             add    hl, bc
+             pop    af
+             add    a,(hl)
+             push   af
+             
+             ; hl je pokazivac na target promenljivu
+             ld     hl, LINE_BUFFER
+             ld     bc, 4
+             Add    hl, bc
+             ld     a, (hl)
+             sub    97
+             ld     hl, $1000
+             ld     b, 0
+             ld     c, a
+
+             add    hl, bc
+             pop    af
+             ld    (hl), a
+
+             ret
+             
+             
+             
+; BASIC onstrukcija za mnozenje konstantom
+BASIC_ComMuc:
+             ; hl je pokazivac na pocetnu promenljivu
+             ld     hl, LINE_BUFFER
+             ld     bc, 6
+             Add    hl, bc
+             ld     a, (hl)
+             sub    97
+             ld     hl, $1000
+             ld     b, 0
+             ld     c, a
+
+             add    hl, bc
+             push    hl
+
+
+             ld     hl, LINE_BUFFER
+             ld     bc, 8
+             Add    hl, bc
+             ld     (0), hl
+             ld     de, (0)
+             ; StrToInt - hl je trazeni broj; de je moseto stringa
+             ld hl,0
+_ComMucConvLoop:
+             ld      a,(de)
+             sub     30h
+             cp      10
+             jr      nc, _ComMucnumDone
+             inc     de
+
+             ld      b,h
+             ld      c,l
+             add     hl,hl
+             add     hl,hl
+             add     hl,bc
+             add     hl,hl
+
+             add     a,l
+             ld      l,a
+             jr      nc,_ComMucConvLoop
+             inc     h
+             jr      _ComMucConvLoop
+
+_ComMucnumDone:
+               ex    de, hl ; de je cinilac
+               pop   hl ; hl je pokazivac na cinilac
+               ld    (LINE_BUFFER), de
+               ld    bc, LINE_BUFFER
+               call  BIOS_mul
+               push  af
+
+               ;push  hl
+               ; hl je pokazivac na ciljanu promenljivu
+             ld     hl, LINE_BUFFER
+             ld     bc, 4
+             Add    hl, bc
+             ld     a, (hl)
+             sub    97
+             ld     hl, $1000
+             ld     b, 0
+             ld     c, a
+
+             add    hl, bc
+
+             pop    af
+             ld     (hl), a
+
+             ret
+             
+             
+; BASIC instrukcija za mnozenje dve promenljive
+BASIC_ComMuv:
+             ; hl je pokazivac na pocetnu promenljivu
+             ld     hl, LINE_BUFFER
+             ld     bc, 6
+             Add    hl, bc
+             ld     a, (hl)
+             sub    97
+             ld     hl, $1000
+             ld     b, 0
+             ld     c, a
+
+             add    hl, bc
+             push   hl
+
+             ; hl je pokazivac na drugu promenljivu
+             ld     hl, LINE_BUFFER
+             ld     bc, 8
+             Add    hl, bc
+             ld     a, (hl)
+             sub    97
+             ld     hl, $1000
+             ld     b, 0
+             ld     c, a
+
+             add    hl, bc
+             ld     b,h
+             ld     c,l
+             
+             pop    hl
+             call   BIOS_mul
+             push   af
+             
+
+             ; hl je pokazivac na target promenljivu
+             ld     hl, LINE_BUFFER
+             ld     bc, 4
+             Add    hl, bc
+             ld     a, (hl)
+             sub    97
+             ld     hl, $1000
+             ld     b, 0
+             ld     c, a
+
+             add    hl, bc
+             pop    af
+             ld    (hl), a
+             ret
+
              
 ; ------------------------------------------
 ; Rutina za množenje brojeva
@@ -455,17 +673,17 @@ _ComAdcnumDone:
 ; Izlaz se smesta u A registar
 ; ----------------------------------------
 BIOS_mul:
-	ld	a,(bc)
-	ld	b,(hl)
-	ld	d,a
+         ld         a,(bc)
+         ld         b,(hl)
+         ld         d,a
 _mul_loop:
-	add 	a,d
-	djnz	_mul_loop
-	sub	d
-	ret
+          add       a,d
+          djnz      _mul_loop
+          sub	    d
+          ret
 
 
-
+halt
 STR_mainScreen:
                db "Basic interpreter", 13, 10, 0
                
@@ -483,12 +701,6 @@ STR_errParse:
              db 13, 10
              db "Greska prilikom parsiranja", 13, 10, 0
 
-OPERAND1:
-	db 10
-
-OPERAND2:
-	db 2
-
 STR_keyWords:
              db "inc", 0 ; Uvecaj promenljivu za 1
              db "dec", 0 ; Unanji promenljivu za 1
@@ -497,7 +709,7 @@ STR_keyWords:
              db "adc", 0 ; dodavanje vrednosti
              db "adv", 0 ; dodavanje varijable
              db "muc", 0 ; mnozenje konstantom
-             db "muv", 0 ; mozenje varijablom
+             db "muv", 0 ; mnozenje varijablom
              
 MAT_binToChar:
               db "0", 0, 0, 0
